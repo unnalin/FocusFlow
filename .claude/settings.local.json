@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"$env:SPECIFY_FEATURE=''001-focus-flow''; .\\\\.specify\\\\scripts\\\\powershell\\\\check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"&{ $env:SPECIFY_FEATURE=''001-focus-flow''; cd .specify/scripts/powershell; .\\\\check-prerequisites.ps1 -PathsOnly }\")",
+      "Bash(git checkout:*)",
+      "Bash(powershell -ExecutionPolicy Bypass -File check-prerequisites.ps1:*)",
+      "Bash(python:*)",
+      "Bash(./venv/Scripts/pip:*)",
+      "Bash(./venv/Scripts/alembic init:*)",
+      "Bash(powershell -Command \"$env:HTTP_PROXY = ''http://127.0.0.1:7897''; $env:HTTPS_PROXY = ''http://127.0.0.1:7897''; .\\\\venv\\\\Scripts\\\\pip install --index-url https://pypi.org/simple -r requirements.txt\")",
+      "Bash(cmd /C \"set HTTP_PROXY=http://127.0.0.1:7897 && set HTTPS_PROXY=http://127.0.0.1:7897 && uv pip install -r requirements.txt --index-url https://pypi.org/simple\")",
+      "Bash(.venv/Scripts/alembic revision:*)",
+      "Bash(.venv/Scripts/alembic:*)",
+      "Bash(npm install)",
+      "Bash(copy .env.example .env:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(.venvScriptspython.exe -c \"import sys; sys.path.insert\\(0, ''.''\\); from src.main import app; print\\(''Import successful!''\\)\")",
+      "Bash(\".venv/Scripts/python.exe\" -c \"import sys; sys.path.insert\\(0, ''.''\\); from src.main import app; print\\(''Import successful!''\\)\")",
+      "Bash(\".venv/Scripts/python.exe\" -m uvicorn src.main:app --help)",
+      "Bash(\".venv/Scripts/python.exe\" -c \"from src.main import app; print\\(f''✓ App loaded successfully''\\); print\\(f''✓ App title: {app.title}''\\); print\\(f''✓ App version: {app.version}''\\)\")",
+      "Bash(\".venv/Scripts/python.exe\" -c \"from src.main import app; print\\(''App loaded successfully''\\); print\\(''App title:'', app.title\\); print\\(''App version:'', app.version\\)\")"
+    ]
+  }
+}
