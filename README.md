@@ -85,15 +85,6 @@ frontend/
     utils/       # Utilities
 ```
 
-## MVP Tasks Completed
-
-✓ Phase 1: Project setup (8 tasks)
-✓ Phase 2: Foundational infrastructure (14 tasks)
-✓ Phase 3: ADHD-optimized UI (10 tasks)
-✓ Phase 4: Focus Timer MVP (26 tasks)
-
-**Total: 58/58 MVP tasks complete**
-
 ## Next Steps
 
 After MVP validation, you can add:
