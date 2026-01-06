@@ -22,9 +22,7 @@
       "Bash(\".venv/Scripts/python.exe\" -m uvicorn src.main:app --help)",
       "Bash(\".venv/Scripts/python.exe\" -c \"from src.main import app; print\\(f''✓ App loaded successfully''\\); print\\(f''✓ App title: {app.title}''\\); print\\(f''✓ App version: {app.version}''\\)\")",
       "Bash(\".venv/Scripts/python.exe\" -c \"from src.main import app; print\\(''App loaded successfully''\\); print\\(''App title:'', app.title\\); print\\(''App version:'', app.version\\)\")",
-      "Bash(.venv/Scripts/python:*)",
-      "Bash(.venv/Scripts/pip install:*)",
-      "Bash(.venv/Scripts/python.exe:*)"
+      "Bash(git merge:*)"
     ]
   }
 }
