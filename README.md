@@ -1,11 +1,12 @@
-# FocusFlow - ADHD-Friendly Focus Tool
+# FocusFlow 
 
-An ADHD-optimized focus and productivity tool with Pomodoro timer, built with FastAPI and React.
+给我自己做的一个自用小工具合集，主要包括番茄钟todo，其他的待开发，准备做一下todolist，赛博日记之类的
+
+爱来自claude code + openspec
 
 ## Features
 
 - 🎯 Single-task focus with 25-minute Pomodoro sessions
-- 🌊 ADHD-friendly UI with calming colors and high contrast
 - 🌙 Dark/light theme support
 - 🎨 Immersive distraction-free mode
 - ⌨️ Keyboard shortcuts
@@ -100,7 +101,3 @@ After MVP validation, you can add:
 - User Story 3: Task breakdown into micro-steps
 - User Story 4: Minimal task list view
 - User Story 5: Daily habit tracking with streaks
-
-## License
-
-MIT
