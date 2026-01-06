@@ -52,3 +52,10 @@ logs/
 
 # OS
 Thumbs.db
+
+# Test and temporary files
+test-*.bat
+*.TESTMODE.*
+*SUMMARY*.md
+*FIX*.md
+TEST_*.md
