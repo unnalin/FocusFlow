@@ -10,14 +10,35 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./focusflow.db")
 
-# Create async engine with WAL mode for SQLite
+# Determine if using SQLite or PostgreSQL
+is_sqlite = "sqlite" in DATABASE_URL.lower()
+
+# Configure engine parameters based on database type
+if is_sqlite:
+    # SQLite configuration for local development
+    engine_kwargs = {
+        "poolclass": NullPool,  # SQLite doesn't benefit from connection pooling
+        "connect_args": {"check_same_thread": False},
+    }
+else:
+    # PostgreSQL configuration for production
+    engine_kwargs = {
+        "pool_size": 20,  # Maximum number of connections in the pool
+        "max_overflow": 10,  # Maximum number of connections that can be created beyond pool_size
+        "pool_pre_ping": True,  # Verify connections before using them
+        "pool_recycle": 3600,  # Recycle connections after 1 hour
+        "connect_args": {
+            "server_settings": {
+                "application_name": "focusflow_backend"
+            }
+        }
+    }
+
+# Create async engine
 engine = create_async_engine(
     DATABASE_URL,
     echo=True if os.getenv("ENVIRONMENT") == "development" else False,
-    poolclass=NullPool,  # SQLite doesn't benefit from connection pooling
-    connect_args={
-        "check_same_thread": False,
-    } if "sqlite" in DATABASE_URL else {},
+    **engine_kwargs
 )
 
 # Configure session factory
@@ -47,10 +68,10 @@ async def get_db() -> AsyncSession:
 
 
 async def init_db():
-    """Initialize database with WAL mode for SQLite."""
+    """Initialize database. Applies SQLite optimizations if using SQLite."""
     async with engine.begin() as conn:
-        # Enable WAL mode for better concurrency
-        if "sqlite" in DATABASE_URL:
+        # Enable WAL mode for better concurrency (SQLite only)
+        if is_sqlite:
             await conn.execute(text("PRAGMA journal_mode=WAL"))
             await conn.execute(text("PRAGMA synchronous=NORMAL"))
             await conn.execute(text("PRAGMA cache_size=-64000"))  # 64MB cache

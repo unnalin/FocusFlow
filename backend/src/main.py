@@ -13,7 +13,23 @@ app = FastAPI(
 )
 
 # CORS middleware configuration
-origins = os.getenv("BACKEND_CORS_ORIGINS", "http://localhost:5173").split(",")
+# Support both ALLOWED_ORIGINS and BACKEND_CORS_ORIGINS for compatibility
+allowed_origins = os.getenv("ALLOWED_ORIGINS") or os.getenv("BACKEND_CORS_ORIGINS")
+
+if allowed_origins:
+    # Parse comma-separated origins and strip whitespace
+    origins = [origin.strip() for origin in allowed_origins.split(",") if origin.strip()]
+else:
+    # Default to localhost for development
+    origins = ["http://localhost:5173", "http://localhost:3000"]
+
+# In production, validate that origins are explicitly set
+is_production = os.getenv("ENVIRONMENT", "development").lower() == "production"
+if is_production and not allowed_origins:
+    raise ValueError(
+        "ALLOWED_ORIGINS must be explicitly set in production environment. "
+        "Example: ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com"
+    )
 
 app.add_middleware(
     CORSMiddleware,
