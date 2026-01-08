@@ -48,10 +48,9 @@ export const useTimer = ({ duration, onComplete, onTick }: UseTimerOptions) => {
     lastTickRef.current = now
 
     setState((prev) => {
-      if (!prev.isRunning || !prev.startTime) return prev
+      if (!prev.isRunning) return prev
 
-      const elapsed = now - prev.startTime - prev.pausedTime
-      const newTimeLeft = Math.max(0, duration * 60 * 1000 - elapsed)
+      const newTimeLeft = Math.max(0, prev.timeLeft - delta)
 
       if (newTimeLeft === 0) {
         onComplete?.()
@@ -69,50 +68,47 @@ export const useTimer = ({ duration, onComplete, onTick }: UseTimerOptions) => {
         timeLeft: newTimeLeft,
       }
     })
-  }, [duration, onComplete, onTick])
+  }, [onComplete, onTick])
+
+  const tickRef = useRef(tick)
+
+  // Update tick ref when tick changes
+  useEffect(() => {
+    tickRef.current = tick
+  }, [tick])
 
   useEffect(() => {
     if (state.isRunning) {
+      // Reset lastTick only when starting the interval
       lastTickRef.current = Date.now()
-      intervalRef.current = window.setInterval(tick, 100) // 100ms for smooth updates
+      intervalRef.current = window.setInterval(() => tickRef.current(), 100) // 100ms for smooth updates
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
+      }
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
       }
     }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [state.isRunning, tick])
+  }, [state.isRunning])
 
   const start = useCallback(() => {
-    setState((prev) => {
-      const now = Date.now()
-      return {
-        ...prev,
-        isRunning: true,
-        startTime: prev.startTime || now,
-      }
-    })
+    setState((prev) => ({
+      ...prev,
+      isRunning: true,
+    }))
   }, [])
 
   const pause = useCallback(() => {
-    setState((prev) => {
-      if (!prev.isRunning || !prev.startTime) return prev
-
-      const now = Date.now()
-      const additionalPausedTime = now - lastTickRef.current
-
-      return {
-        ...prev,
-        isRunning: false,
-        pausedTime: prev.pausedTime + additionalPausedTime,
-      }
-    })
+    setState((prev) => ({
+      ...prev,
+      isRunning: false,
+    }))
   }, [])
 
   const reset = useCallback(() => {

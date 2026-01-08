@@ -78,10 +78,8 @@ export default function FocusPage() {
 
   // Reset timer when session type or duration changes
   useEffect(() => {
-    if (!isRunning) {
-      reset()
-    }
-  }, [sessionType, duration, isRunning, reset])
+    reset()
+  }, [sessionType, duration, reset])
 
   const handleStart = async () => {
     if (!currentSessionId) {
