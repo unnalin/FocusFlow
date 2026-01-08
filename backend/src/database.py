@@ -96,16 +96,23 @@
 #         await conn.run_sync(Base.metadata.create_all)
 
 """Database configuration and session management."""
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from sqlalchemy.pool import NullPool
-from sqlalchemy import text
+from typing import Generator
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./focusflow.db")
+# Convert async database URLs to sync versions
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./focusflow.db")
+
+# Convert asyncpg/aiosqlite URLs to sync versions
+if "postgresql+asyncpg://" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("postgresql+asyncpg://", "postgresql+psycopg2://")
+elif "sqlite+aiosqlite://" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
 
 # Determine if using SQLite or PostgreSQL
 is_sqlite = "sqlite" in DATABASE_URL.lower()
@@ -118,69 +125,55 @@ if is_sqlite:
         "connect_args": {"check_same_thread": False},
     }
 else:
-    # PostgreSQL configuration for production (Render/PgBouncer)
+    # PostgreSQL configuration for production
+    # psycopg2 works well with PgBouncer, no special configuration needed
     engine_kwargs = {
-        # 核心修改 1: 必须使用 NullPool。
-        # 当后端连接 PgBouncer 时，SQLAlchemy 内部不能再维护连接池，否则会导致状态冲突。
-        "poolclass": NullPool, 
-        
+        "pool_size": 20,
+        "max_overflow": 10,
         "pool_pre_ping": True,
-        "connect_args": {
-            # 核心修改 2: 禁用驱动层面的预处理语句缓存。
-            # 这两个参数必须放在 connect_args 内部。
-            "statement_cache_size": 0,
-            "prepared_statement_cache_size": 0,
-            "server_settings": {
-                "application_name": "focusflow_backend",
-                "jit": "off"
-            }
-        }
+        "pool_recycle": 3600,
     }
 
-# Create async engine
-# 核心修改 3: 移除了之前错误的 execution_options 传参。
-engine = create_async_engine(
+# Create sync engine
+engine = create_engine(
     DATABASE_URL,
     echo=True if os.getenv("ENVIRONMENT") == "development" else False,
     **engine_kwargs
 )
 
 # Configure session factory
-AsyncSessionLocal = async_sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
+SessionLocal = sessionmaker(
+    bind=engine,
     autocommit=False,
     autoflush=False,
+    expire_on_commit=False,
 )
 
 # Base class for models
 Base = declarative_base()
 
 
-async def get_db() -> AsyncSession:
-    """Dependency for getting async database session."""
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-            # 注意：在 FastAPI 依赖中，通常不需要在这里手动 commit
-            # 但如果你习惯在这里 commit 也可以保留
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
+def get_db() -> Generator[Session, None, None]:
+    """Dependency for getting database session."""
+    db = SessionLocal()
+    try:
+        yield db
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 
-async def init_db():
+def init_db():
     """Initialize database. Applies SQLite optimizations if using SQLite."""
-    async with engine.begin() as conn:
+    with engine.begin() as conn:
         # Enable WAL mode for better concurrency (SQLite only)
         if is_sqlite:
-            await conn.execute(text("PRAGMA journal_mode=WAL"))
-            await conn.execute(text("PRAGMA synchronous=NORMAL"))
-            await conn.execute(text("PRAGMA cache_size=-64000"))
+            conn.execute(text("PRAGMA journal_mode=WAL"))
+            conn.execute(text("PRAGMA synchronous=NORMAL"))
+            conn.execute(text("PRAGMA cache_size=-64000"))
 
         # Create all tables
-        await conn.run_sync(Base.metadata.create_all)
+        Base.metadata.create_all(bind=engine)
