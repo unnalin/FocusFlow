@@ -1,4 +1,5 @@
 """Pomodoro router."""
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.database import get_db
@@ -31,7 +32,7 @@ async def get_session(session_id: int, db: AsyncSession = Depends(get_db)):
     return session
 
 
-@router.get("/active", response_model=PomodoroSessionResponse | None)
+@router.get("/active", response_model=Optional[PomodoroSessionResponse])
 async def get_active_session(db: AsyncSession = Depends(get_db)):
     """Get the currently active pomodoro session."""
     return await pomodoro_service.get_active_session(db)

@@ -5,9 +5,11 @@ interface UIState {
   theme: 'light' | 'dark'
   colorScheme: 'default' | 'forest'
   immersiveMode: boolean
+  breakBgmEnabled: boolean
   setTheme: (theme: 'light' | 'dark') => void
   setColorScheme: (scheme: 'default' | 'forest') => void
   setImmersiveMode: (enabled: boolean) => void
+  setBreakBgmEnabled: (enabled: boolean) => void
   toggleTheme: () => void
 }
 
@@ -17,9 +19,11 @@ export const useUIStore = create<UIState>()(
       theme: 'dark',
       colorScheme: 'default',
       immersiveMode: true,
+      breakBgmEnabled: true,
       setTheme: (theme) => set({ theme }),
       setColorScheme: (scheme) => set({ colorScheme: scheme }),
       setImmersiveMode: (enabled) => set({ immersiveMode: enabled }),
+      setBreakBgmEnabled: (enabled) => set({ breakBgmEnabled: enabled }),
       toggleTheme: () => set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' })),
     }),
     {

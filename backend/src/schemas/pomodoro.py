@@ -7,7 +7,7 @@ from typing import Optional
 class PomodoroSessionBase(BaseModel):
     """Base pomodoro session schema."""
     session_type: str = Field(..., pattern="^(focus|break)$")
-    duration: int = Field(..., ge=1, le=60)
+    duration: float = Field(..., gt=0, le=60)
 
 
 class PomodoroSessionCreate(PomodoroSessionBase):

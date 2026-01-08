@@ -7,7 +7,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
 export const SettingsModal = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const { immersiveMode, setImmersiveMode } = useUIStore()
+  const { immersiveMode, setImmersiveMode, breakBgmEnabled, setBreakBgmEnabled } = useUIStore()
 
   useKeyboardShortcuts({
     'ctrl+,': () => setIsOpen(true),
@@ -51,6 +51,32 @@ export const SettingsModal = () => {
               <span
                 className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
                   immersiveMode ? 'translate-x-6' : ''
+                }`}
+              />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-medium block">Break Background Music</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                Play relaxing music during break sessions
+              </span>
+            </div>
+            <button
+              onClick={() => setBreakBgmEnabled(!breakBgmEnabled)}
+              style={{
+                backgroundColor: breakBgmEnabled
+                  ? 'rgb(var(--color-accent-600))'
+                  : undefined,
+              }}
+              className={`relative w-14 h-8 rounded-full transition-colors ${
+                breakBgmEnabled ? '' : 'bg-neutral-300 dark:bg-neutral-600'
+              }`}
+            >
+              <span
+                className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                  breakBgmEnabled ? 'translate-x-6' : ''
                 }`}
               />
             </button>

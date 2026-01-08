@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTimer } from '@/hooks/useTimer'
 import { useTimerStore } from '@/store/timerStore'
+import { useUIStore } from '@/store/uiStore'
 import { useTasks } from '@/hooks/useTasks'
 import { CircularTimer } from '@/components/Timer/CircularTimer'
 import { TimerDisplay } from '@/components/Timer/TimerDisplay'
@@ -22,12 +23,16 @@ export default function FocusPage() {
     incrementCompleted,
   } = useTimerStore()
 
+  const { breakBgmEnabled } = useUIStore()
   const { tasks, createTask, deleteTask } = useTasks(false) // Only show incomplete tasks
   const [selectedTask, setSelectedTask] = useState<number | null>(currentTaskId)
 
-  const duration = sessionType === 'focus' ? 10 / 60 : 10 / 60
+  const duration = sessionType === 'focus' ? 1 : 1
 
   const handleComplete = async () => {
+    // Stop BGM if playing
+    audioManager.stopBreakBgm()
+
     // Play completion sound
     audioManager.play(sessionType === 'focus' ? 'focus-complete' : 'break-complete')
 
@@ -53,7 +58,8 @@ export default function FocusPage() {
     }
 
     // Switch session type
-    setSessionType(sessionType === 'focus' ? 'break' : 'focus')
+    const nextSessionType = sessionType === 'focus' ? 'break' : 'focus'
+    setSessionType(nextSessionType)
     setIsRunning(false)
 
     // Reset timer for the next session
@@ -63,6 +69,12 @@ export default function FocusPage() {
   const { timeLeft, isRunning, start, pause, stop, reset } = useTimer({
     duration,
     onComplete: handleComplete,
+    onTick: (timeLeft) => {
+      // Update BGM fade-out based on remaining time (only during break sessions)
+      if (sessionType === 'break' && breakBgmEnabled) {
+        audioManager.updateBgmWithTimeLeft(timeLeft)
+      }
+    },
   })
 
   const totalTime = duration * 60 * 1000
@@ -80,6 +92,22 @@ export default function FocusPage() {
   useEffect(() => {
     reset()
   }, [sessionType, duration, reset])
+
+  // Handle break BGM playback based on session type and running state
+  useEffect(() => {
+    if (sessionType === 'break' && isRunning && breakBgmEnabled) {
+      // Start playing BGM when break session starts
+      audioManager.playBreakBgm(0.3)
+    } else {
+      // Stop BGM when not in break session or when paused
+      audioManager.stopBreakBgm()
+    }
+
+    // Cleanup: stop BGM when component unmounts
+    return () => {
+      audioManager.stopBreakBgm()
+    }
+  }, [sessionType, isRunning, breakBgmEnabled])
 
   const handleStart = async () => {
     if (!currentSessionId) {
@@ -106,6 +134,9 @@ export default function FocusPage() {
   }
 
   const handleStop = async () => {
+    // Stop BGM if playing
+    audioManager.stopBreakBgm()
+
     if (currentSessionId) {
       await pomodoroService.updateSession(currentSessionId, {
         state: 'cancelled',
