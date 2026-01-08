@@ -39,6 +39,11 @@ if is_production and not allowed_origins:
         "Example: ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com"
     )
 
+# Print CORS origins for debugging
+print(f"[CORS] Configured origins: {origins}")
+print(f"[CORS] Environment: {os.getenv('ENVIRONMENT', 'development')}")
+print(f"[CORS] Raw ALLOWED_ORIGINS: {os.getenv('ALLOWED_ORIGINS')}")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
