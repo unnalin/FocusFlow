@@ -54,10 +54,10 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-def startup_event():
+async def startup_event():
     """Initialize database on startup."""
     from src.database import init_db
-    init_db()
+    await init_db()
 
 
 @app.get("/api/v1/health")
