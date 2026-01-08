@@ -30,18 +30,32 @@ else:
         "pool_recycle": 3600,  # Recycle connections after 1 hour
         "connect_args": {
             "statement_cache_size": 0,  # Disable prepared statements for PgBouncer
+            "prepared_statement_cache_size": 0,  # Also disable this cache
             "server_settings": {
-                "application_name": "focusflow_backend"
+                "application_name": "focusflow_backend",
+                "jit": "off"  # Disable JIT for PgBouncer
             }
         }
     }
 
 # Create async engine
-engine = create_async_engine(
-    DATABASE_URL,
-    echo=True if os.getenv("ENVIRONMENT") == "development" else False,
-    **engine_kwargs
-)
+# For asyncpg, we need to pass prepare_threshold=0 to disable prepared statements
+if not is_sqlite:
+    # Use execution options to disable prepared statements globally
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=True if os.getenv("ENVIRONMENT") == "development" else False,
+        execution_options={
+            "prepared_statement_cache_size": 0
+        },
+        **engine_kwargs
+    )
+else:
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=True if os.getenv("ENVIRONMENT") == "development" else False,
+        **engine_kwargs
+    )
 
 # Configure session factory
 AsyncSessionLocal = async_sessionmaker(
