@@ -114,6 +114,14 @@ if "postgresql+asyncpg://" in DATABASE_URL:
 elif "sqlite+aiosqlite://" in DATABASE_URL:
     DATABASE_URL = DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
 
+# Handle Render's DATABASE_URL format (contains ?ssl=true or similar query params)
+# psycopg2 doesn't support query params in URL, need to convert to connect_args
+if "postgresql" in DATABASE_URL and "?" in DATABASE_URL:
+    # Split URL and query params
+    base_url, query_string = DATABASE_URL.split("?", 1)
+    # For Render PostgreSQL, we need sslmode in connect_args instead
+    DATABASE_URL = base_url
+
 # Determine if using SQLite or PostgreSQL
 is_sqlite = "sqlite" in DATABASE_URL.lower()
 
@@ -132,6 +140,9 @@ else:
         "max_overflow": 10,
         "pool_pre_ping": True,
         "pool_recycle": 3600,
+        "connect_args": {
+            "sslmode": "require"  # Required for Render PostgreSQL
+        }
     }
 
 # Create sync engine
