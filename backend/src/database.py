@@ -12,9 +12,6 @@ load_dotenv()
 # Get database URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./focusflow.db")
 
-# Debug: print original URL (remove after fixing)
-print(f"[DEBUG] Original DATABASE_URL: {DATABASE_URL[:50]}...")
-
 # Handle Render's DATABASE_URL format
 # Render uses postgres:// but we need postgresql+psycopg:// for async psycopg3
 if DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://"):
@@ -30,9 +27,6 @@ if DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql
 
     # Now add the psycopg driver
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
-    print(f"[DEBUG] Converted to postgresql+psycopg://")
-
-print(f"[DEBUG] Final DATABASE_URL: {DATABASE_URL[:50]}...")
 
 # Determine if using SQLite or PostgreSQL
 is_sqlite = "sqlite" in DATABASE_URL.lower()
