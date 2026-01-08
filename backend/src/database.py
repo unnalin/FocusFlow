@@ -53,9 +53,6 @@ else:
         "pool_pre_ping": True,
         "pool_recycle": 3600,
         "connect_args": {
-            "server_settings": {
-                "application_name": "focusflow_backend",
-            },
             # psycopg3 automatically handles SSL based on server requirements
             "autocommit": False,
         }
