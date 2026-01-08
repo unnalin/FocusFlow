@@ -12,20 +12,27 @@ load_dotenv()
 # Get database URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./focusflow.db")
 
+# Debug: print original URL (remove after fixing)
+print(f"[DEBUG] Original DATABASE_URL: {DATABASE_URL[:50]}...")
+
 # Handle Render's DATABASE_URL format
 # Render uses postgres:// but we need postgresql+psycopg:// for async psycopg3
-if DATABASE_URL.startswith("postgres://"):
+if DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://"):
     # Strip any query params first
     if "?" in DATABASE_URL:
-        DATABASE_URL = DATABASE_URL.split("?")[0]
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
-elif DATABASE_URL.startswith("postgresql://"):
-    # Strip any query params first
-    if "?" in DATABASE_URL:
-        DATABASE_URL = DATABASE_URL.split("?")[0]
-    # Only add +psycopg if no driver specified
-    if "+psycopg" not in DATABASE_URL and "+asyncpg" not in DATABASE_URL:
-        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+        base_url = DATABASE_URL.split("?")[0]
+        DATABASE_URL = base_url
+
+    # Remove any existing driver specification
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://", 1)
+    DATABASE_URL = DATABASE_URL.replace("postgresql+psycopg://", "postgresql://", 1)
+
+    # Now add the psycopg driver
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+    print(f"[DEBUG] Converted to postgresql+psycopg://")
+
+print(f"[DEBUG] Final DATABASE_URL: {DATABASE_URL[:50]}...")
 
 # Determine if using SQLite or PostgreSQL
 is_sqlite = "sqlite" in DATABASE_URL.lower()
