@@ -25,7 +25,7 @@ export default function FocusPage() {
   const { tasks, createTask, deleteTask } = useTasks(false) // Only show incomplete tasks
   const [selectedTask, setSelectedTask] = useState<number | null>(currentTaskId)
 
-  const duration = sessionType === 'focus' ? 25 : 5
+  const duration = sessionType === 'focus' ? 10 / 60 : 10 / 60
 
   const handleComplete = async () => {
     // Play completion sound
