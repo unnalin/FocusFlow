@@ -13,15 +13,19 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./focusflow.db")
 
 # Handle Render's DATABASE_URL format
-# Render uses postgres:// but SQLAlchemy needs postgresql+psycopg://
+# Render uses postgres:// but we need postgresql+psycopg:// for async psycopg3
 if DATABASE_URL.startswith("postgres://"):
+    # Strip any query params first
+    if "?" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.split("?")[0]
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
-elif DATABASE_URL.startswith("postgresql://") and "+psycopg" not in DATABASE_URL and "+asyncpg" not in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
-
-# Strip SSL query params (psycopg3 handles SSL automatically)
-if "postgresql" in DATABASE_URL and "?" in DATABASE_URL:
-    DATABASE_URL = DATABASE_URL.split("?")[0]
+elif DATABASE_URL.startswith("postgresql://"):
+    # Strip any query params first
+    if "?" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.split("?")[0]
+    # Only add +psycopg if no driver specified
+    if "+psycopg" not in DATABASE_URL and "+asyncpg" not in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 # Determine if using SQLite or PostgreSQL
 is_sqlite = "sqlite" in DATABASE_URL.lower()
