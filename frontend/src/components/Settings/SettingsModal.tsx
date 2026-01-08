@@ -7,7 +7,16 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 
 export const SettingsModal = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const { immersiveMode, setImmersiveMode, breakBgmEnabled, setBreakBgmEnabled } = useUIStore()
+  const {
+    immersiveMode,
+    setImmersiveMode,
+    breakBgmEnabled,
+    setBreakBgmEnabled,
+    focusDuration,
+    setFocusDuration,
+    breakDuration,
+    setBreakDuration
+  } = useUIStore()
 
   useKeyboardShortcuts({
     'ctrl+,': () => setIsOpen(true),
@@ -80,6 +89,40 @@ export const SettingsModal = () => {
                 }`}
               />
             </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-medium block">Focus Duration</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                Duration of focus sessions in minutes
+              </span>
+            </div>
+            <input
+              type="number"
+              min="1"
+              max="60"
+              value={focusDuration}
+              onChange={(e) => setFocusDuration(Number(e.target.value))}
+              className="w-20 px-3 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 text-center focus:outline-none focus:ring-2 focus:ring-accent-500"
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-medium block">Break Duration</span>
+              <span className="text-xs text-neutral-500 dark:text-neutral-400">
+                Duration of break sessions in minutes
+              </span>
+            </div>
+            <input
+              type="number"
+              min="1"
+              max="30"
+              value={breakDuration}
+              onChange={(e) => setBreakDuration(Number(e.target.value))}
+              className="w-20 px-3 py-2 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 text-center focus:outline-none focus:ring-2 focus:ring-accent-500"
+            />
           </div>
 
           <div className="pt-4 border-t border-neutral-200 dark:border-neutral-700">

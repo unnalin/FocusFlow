@@ -23,11 +23,11 @@ export default function FocusPage() {
     incrementCompleted,
   } = useTimerStore()
 
-  const { breakBgmEnabled } = useUIStore()
+  const { breakBgmEnabled, focusDuration, breakDuration } = useUIStore()
   const { tasks, createTask, deleteTask } = useTasks(false) // Only show incomplete tasks
   const [selectedTask, setSelectedTask] = useState<number | null>(currentTaskId)
 
-  const duration = sessionType === 'focus' ? 1 : 1
+  const duration = sessionType === 'focus' ? focusDuration : breakDuration
 
   const handleComplete = async () => {
     // Stop BGM if playing
@@ -57,13 +57,10 @@ export default function FocusPage() {
       }
     }
 
-    // Switch session type
+    // Switch session type (reset will be triggered by useEffect when sessionType changes)
     const nextSessionType = sessionType === 'focus' ? 'break' : 'focus'
     setSessionType(nextSessionType)
     setIsRunning(false)
-
-    // Reset timer for the next session
-    stop()
   }
 
   const { timeLeft, isRunning, start, pause, stop, reset } = useTimer({
