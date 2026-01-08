@@ -22,12 +22,14 @@ if is_sqlite:
     }
 else:
     # PostgreSQL configuration for production
+    # Disable prepared statements for PgBouncer compatibility (used by Render)
     engine_kwargs = {
         "pool_size": 20,  # Maximum number of connections in the pool
         "max_overflow": 10,  # Maximum number of connections that can be created beyond pool_size
         "pool_pre_ping": True,  # Verify connections before using them
         "pool_recycle": 3600,  # Recycle connections after 1 hour
         "connect_args": {
+            "statement_cache_size": 0,  # Disable prepared statements for PgBouncer
             "server_settings": {
                 "application_name": "focusflow_backend"
             }
