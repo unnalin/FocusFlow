@@ -7,8 +7,10 @@ import { CircularTimer } from '@/components/Timer/CircularTimer'
 import { TimerDisplay } from '@/components/Timer/TimerDisplay'
 import { TimerControls } from '@/components/Timer/TimerControls'
 import { TaskInput } from '@/components/Tasks/TaskInput'
+import ParticleBackground from '@/components/Background/ParticleBackground'
 import { audioManager, preloadAudioFiles } from '@/utils/audioUtils'
 import { pomodoroService } from '@/services/pomodoroService'
+import { translations } from '@/utils/translations'
 
 export default function FocusPage() {
   const {
@@ -21,11 +23,14 @@ export default function FocusPage() {
     setIsRunning,
     setCurrentSessionId,
     incrementCompleted,
+    checkAndResetDaily,
   } = useTimerStore()
 
-  const { breakBgmEnabled, focusDuration, breakDuration } = useUIStore()
-  const { tasks, createTask, deleteTask } = useTasks(false) // Only show incomplete tasks
+  const { breakBgmEnabled, focusDuration, breakDuration, language } = useUIStore()
+  const { tasks, createTask, deleteTask} = useTasks(false) // Only show incomplete tasks
   const [selectedTask, setSelectedTask] = useState<number | null>(currentTaskId)
+
+  const t = translations[language]
 
   const duration = sessionType === 'focus' ? focusDuration : breakDuration
 
@@ -79,6 +84,8 @@ export default function FocusPage() {
   useEffect(() => {
     // Preload audio files on mount
     preloadAudioFiles()
+    // Check and reset daily count on mount
+    checkAndResetDaily()
   }, [])
 
   useEffect(() => {
@@ -158,16 +165,25 @@ export default function FocusPage() {
 
   const currentTask = tasks.find((t) => t.id === selectedTask)
 
+  // Format today's date
+  const today = new Date()
+  const formattedDate = today.toLocaleDateString(t.locale, t.dateFormat)
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 animate-fade-in">
-      <div className="max-w-2xl w-full space-y-8">
-        {/* Session type indicator */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-2">
-            {sessionType === 'focus' ? '🎯 Focus Time' : '☕ Break Time'}
-          </h1>
+    <>
+      <ParticleBackground />
+      <div className="min-h-screen flex flex-col items-center justify-center p-8 animate-fade-in">
+        <div className="max-w-2xl w-full space-y-8">
+          {/* Session type indicator */}
+          <div className="text-center">
+            <h1 className="text-3xl font-bold mb-2">
+              {sessionType === 'focus' ? t.focusTime : t.breakTime}
+            </h1>
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
+              {formattedDate}
+            </p>
           <p className="text-neutral-600 dark:text-neutral-400">
-            Completed today: {completedToday} sessions
+            {t.completedToday}: <span className="font-semibold text-primary-600 dark:text-primary-400">{completedToday}</span> {t.sessions}
           </p>
         </div>
 
@@ -175,7 +191,7 @@ export default function FocusPage() {
         {currentTask && (
           <div className="card text-center animate-slide-up">
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
-              Working on:
+              {t.workingOn}:
             </p>
             <h2 className="text-2xl font-bold">{currentTask.title}</h2>
           </div>
@@ -200,7 +216,7 @@ export default function FocusPage() {
         {/* Task selection/creation */}
         {!isRunning && sessionType === 'focus' && (
           <div className="card space-y-4 animate-slide-up">
-            <h3 className="font-semibold text-lg">Select or Create a Task</h3>
+            <h3 className="font-semibold text-lg">{t.selectOrCreateTask}</h3>
             <TaskInput onSubmit={handleTaskCreate} />
 
             {tasks.length > 0 && (
@@ -238,8 +254,8 @@ export default function FocusPage() {
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-lg
                                  text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950
                                  opacity-0 group-hover:opacity-100 transition-all duration-200"
-                      title="Delete task"
-                      aria-label="Delete task"
+                      title={t.deleteTask}
+                      aria-label={t.deleteTask}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -262,5 +278,6 @@ export default function FocusPage() {
         )}
       </div>
     </div>
+    </>
   )
 }

@@ -1,14 +1,18 @@
 import { useState, KeyboardEvent } from 'react'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
+import { useUIStore } from '@/store/uiStore'
+import { translations } from '@/utils/translations'
 
 interface TaskInputProps {
   onSubmit: (title: string) => void
   placeholder?: string
 }
 
-export const TaskInput = ({ onSubmit, placeholder = 'What are you focusing on?' }: TaskInputProps) => {
+export const TaskInput = ({ onSubmit, placeholder }: TaskInputProps) => {
   const [value, setValue] = useState('')
+  const { language } = useUIStore()
+  const t = translations[language]
 
   const handleSubmit = () => {
     if (value.trim()) {
@@ -29,12 +33,12 @@ export const TaskInput = ({ onSubmit, placeholder = 'What are you focusing on?' 
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
+        placeholder={placeholder || t.focusingOn}
         className="flex-1"
         autoFocus
       />
-      <Button onClick={handleSubmit} disabled={!value.trim()}>
-        Add
+      <Button onClick={handleSubmit} disabled={!value.trim()} className="whitespace-nowrap">
+        {t.addTask}
       </Button>
     </div>
   )

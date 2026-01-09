@@ -1,16 +1,18 @@
 import { useUIStore } from '@/store/uiStore'
-
-const schemes = [
-  { value: 'default', label: 'Ocean Blue', emoji: '🌊' },
-  { value: 'forest', label: 'Forest Green', emoji: '🌲' },
-]
+import { translations } from '@/utils/translations'
 
 export const ColorSchemeSelector = () => {
-  const { colorScheme, setColorScheme } = useUIStore()
+  const { colorScheme, setColorScheme, language } = useUIStore()
+  const t = translations[language]
+
+  const schemes = [
+    { value: 'default', label: t.oceanBlue, emoji: '🌊' },
+    { value: 'forest', label: t.forestGreen, emoji: '🌲' },
+  ]
 
   return (
     <div>
-      <span className="text-sm font-medium block mb-2">Color Scheme:</span>
+      <span className="text-base font-medium block mb-2">{t.colorScheme}:</span>
       <div className="flex gap-2">
         {schemes.map((scheme) => (
           <button
